@@ -15,8 +15,8 @@ import type { Node as NcNode } from '@nextcloud/files'
 
 import { FilePickerVue as FilePicker } from '@nextcloud/dialogs/filepicker.js'
 import { translate as t } from '@nextcloud/l10n'
-import { generateUrl } from '@nextcloud/router'
 import { defineComponent } from 'vue'
+import { generateFileUrl } from '../../../files_sharing/src/utils/generateUrl.ts'
 
 export default defineComponent({
 	name: 'FileReferencePickerElement',
@@ -57,12 +57,10 @@ export default defineComponent({
 
 		buttonFactory(selected: NcNode[]): IFilePickerButton[] {
 			const buttons = [] as IFilePickerButton[]
-			if (selected.length === 0) {
+			const [node] = selected
+			// Do not allow selecting the users root folder or if no node is selected
+			if (node === undefined || node.path === '/') {
 				return []
-			}
-			const node = selected.at(0)
-			if (node.path === '/') {
-				return [] // Do not allow selecting the users root folder
 			}
 			buttons.push({
 				label: t('files', 'Choose {file}', { file: node.displayname }),
@@ -81,10 +79,7 @@ export default defineComponent({
 		},
 
 		onSubmit(node: NcNode) {
-			const url = new URL(window.location.href)
-			url.pathname = generateUrl('/f/{fileId}', { fileId: node.fileid! })
-			url.search = ''
-			this.$emit('submit', url.href)
+			this.$emit('submit', generateFileUrl(node.fileid!))
 		},
 	},
 })
