@@ -454,6 +454,14 @@ class CalDavBackend extends AbstractBackend implements SyncSupport, Subscription
 			}
 			$result->closeCursor();
 
+			// Add federated calendars
+			$federatedCalendars = $this->getFederatedCalendarsForUser($principalUriOriginal);
+			foreach ($federatedCalendars as $federatedCalendar) {
+				// Use negative IDs to avoid conflicts with regular calendar IDs
+				$federatedId = 'federated-' . $federatedCalendar['id'];
+				$calendars[$federatedId] = $federatedCalendar;
+			}
+
 			return array_values($calendars);
 		}, $this->db);
 	}
